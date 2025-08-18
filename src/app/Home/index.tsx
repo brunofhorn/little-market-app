@@ -27,10 +27,11 @@ export function Home() {
     }
 
     await itemsStorage.add(newItem)
+    await itemsByStatus()
 
-    setDescription("")
-    setFilter(FilterStatus.PENDING)
     Alert.alert("Adicionado", `O item ${description} foi adicionado.`)
+    setFilter(FilterStatus.PENDING)
+    setDescription("")
   }
 
   async function itemsByStatus() {
@@ -71,6 +72,16 @@ export function Home() {
     }
   }
 
+  async function handleToggleItemStatus(id: string) {
+    try {
+      await itemsStorage.toggleStatus(id)
+      await itemsByStatus()
+    } catch (error) {
+      console.error(error)
+      Alert.alert("Erro", "Não foi possível atualizar o status do item.")
+    }
+  }
+
   useEffect(() => {
     itemsByStatus()
   }, [filter])
@@ -98,7 +109,7 @@ export function Home() {
           renderItem={({ item }) => (
             <Item
               data={item}
-              onStatus={() => { }}
+              onStatus={() => handleToggleItemStatus(item.id)}
               onRemove={() => handleRemove(item.id)}
             />
           )}
