@@ -15,14 +15,14 @@ export function Home() {
   const [description, setDescription] = useState<string>("")
   const [items, setItems] = useState<any>([])
 
-  async function handleAddItem(){
-    if(!description.trim()){
-      return Alert.alert("Adicionar","Informe a descrição para adicionar o item.")
+  async function handleAddItem() {
+    if (!description.trim()) {
+      return Alert.alert("Adicionar", "Informe a descrição para adicionar o item.")
     }
 
     const newItem = {
       id: Math.random().toString(36).substring(2),
-      description, 
+      description,
       status: FilterStatus.PENDING
     }
 
@@ -33,7 +33,7 @@ export function Home() {
     Alert.alert("Adicionado", `O item ${description} foi adicionado.`)
   }
 
-  async function itemsByStatus(){
+  async function itemsByStatus() {
     try {
       const response = await itemsStorage.getByStatus(filter)
 
@@ -44,19 +44,36 @@ export function Home() {
     }
   }
 
-  async function handleRemove(id: string){
+  async function handleRemove(id: string) {
     try {
       await itemsStorage.remove(id)
       await itemsByStatus()
     } catch (error) {
       console.error(error)
-      Alert.alert("Remover","Não foi possível remover o item.")
+      Alert.alert("Remover", "Não foi possível remover o item.")
     }
   }
 
-  useEffect(()=>{
+  function handleClear() {
+    Alert.alert("Limpar", "Deseja realmente remover todos os itens?", [
+      { text: "Não", style: "cancel" },
+      { text: "Sim", onPress: () => onClear() },
+    ])
+  }
+
+  async function onClear() {
+    try {
+      await itemsStorage.clear()
+      setItems([])
+    } catch (error) {
+      console.error(error)
+      Alert.alert("Erro", "Não foi possível remover todos os ítens.")
+    }
+  }
+
+  useEffect(() => {
     itemsByStatus()
-  },[filter])
+  }, [filter])
 
   return (
     <View style={styles.container}>
@@ -69,8 +86,8 @@ export function Home() {
 
       <View style={styles.content}>
         <View style={styles.header}>
-          {FILTER_STATUS.map((status) => <Filter key={status} status={status} isActive={filter === status} onPress={()=> setFilter(status)}/>)}
-          <TouchableOpacity style={styles.clearButton}>
+          {FILTER_STATUS.map((status) => <Filter key={status} status={status} isActive={filter === status} onPress={() => setFilter(status)} />)}
+          <TouchableOpacity style={styles.clearButton} onPress={handleClear}>
             <Text style={styles.clearText}>Limpar</Text>
           </TouchableOpacity>
         </View>
