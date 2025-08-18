@@ -5,7 +5,8 @@ import { Input } from '@/components/Input';
 import { Filter } from '@/components/Filter';
 import { FilterStatus } from '@/types/FilterStatus';
 import { Item } from '@/components/Item';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { itemsStorage } from '@/storage/itemsStorage';
 
 const FILTER_STATUS: FilterStatus[] = [FilterStatus.PENDING, FilterStatus.DONE]
 
@@ -27,6 +28,21 @@ export function Home() {
 
     setItems((prevState: any) => [...prevState, newItem])
   }
+
+  async function getItems(){
+    try {
+      const response = await itemsStorage.get()
+
+      setItems(response)
+    } catch (error) {
+      console.error(error)
+      Alert.alert("Error", "Não foi possível filtrar os itens.")
+    }
+  }
+
+  useEffect(()=>{
+    getItems()
+  },[])
 
   return (
     <View style={styles.container}>
