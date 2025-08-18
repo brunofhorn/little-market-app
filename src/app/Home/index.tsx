@@ -27,12 +27,15 @@ export function Home() {
     }
 
     await itemsStorage.add(newItem)
-    await getItems()
+
+    setDescription("")
+    setFilter(FilterStatus.PENDING)
+    Alert.alert("Adicionado", `O item ${description} foi adicionado.`)
   }
 
-  async function getItems(){
+  async function itemsByStatus(){
     try {
-      const response = await itemsStorage.get()
+      const response = await itemsStorage.getByStatus(filter)
 
       setItems(response)
     } catch (error) {
@@ -41,22 +44,32 @@ export function Home() {
     }
   }
 
+  async function handleRemove(id: string){
+    try {
+      await itemsStorage.remove(id)
+      await itemsByStatus()
+    } catch (error) {
+      console.error(error)
+      Alert.alert("Remover","Não foi possível remover o item.")
+    }
+  }
+
   useEffect(()=>{
-    getItems()
-  },[])
+    itemsByStatus()
+  },[filter])
 
   return (
     <View style={styles.container}>
       <Image source={require('@/assets/logo.png')} style={styles.logo} />
 
       <View style={styles.form}>
-        <Input placeholder='O que você precisa comprar?' onChangeText={setDescription} />
+        <Input value={description} placeholder='O que você precisa comprar?' onChangeText={setDescription} />
         <Button title="Adicionar" onPress={handleAddItem} />
       </View>
 
       <View style={styles.content}>
         <View style={styles.header}>
-          {FILTER_STATUS.map((status) => <Filter key={status} status={status} isActive onPress={()=> setFilter(status)}/>)}
+          {FILTER_STATUS.map((status) => <Filter key={status} status={status} isActive={filter === status} onPress={()=> setFilter(status)}/>)}
           <TouchableOpacity style={styles.clearButton}>
             <Text style={styles.clearText}>Limpar</Text>
           </TouchableOpacity>
@@ -69,7 +82,7 @@ export function Home() {
             <Item
               data={item}
               onStatus={() => { }}
-              onRemove={() => { }}
+              onRemove={() => handleRemove(item.id)}
             />
           )}
           showsVerticalScrollIndicator={false}
